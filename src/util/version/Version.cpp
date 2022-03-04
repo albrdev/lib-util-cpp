@@ -1,6 +1,6 @@
 #include "Version.hpp"
 
-namespace Util
+namespace Util::Version
 {
   bool Version::operator==(const Version& rhs) { return (m_Major == rhs.m_Major) && (m_Minor == rhs.m_Minor) && (m_Build == rhs.m_Build); }
   bool Version::operator!=(const Version& rhs) { return (m_Major != rhs.m_Major) || (m_Minor != rhs.m_Minor) || (m_Build != rhs.m_Build); }
@@ -113,4 +113,4 @@ namespace Util
 
     return *this;
   }
-} // namespace Util
+} // namespace Util::Version

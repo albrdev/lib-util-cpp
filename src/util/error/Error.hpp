@@ -1,5 +1,5 @@
-#ifndef __ERROR_HPP__
-#define __ERROR_HPP__
+#ifndef __UTIL_ERROR__ERROR_HPP__
+#define __UTIL_ERROR__ERROR_HPP__
 
 #include <unordered_map>
 #include <memory>
@@ -10,7 +10,7 @@
 #include "ErrnoError.hpp"
 #include "GaiError.hpp"
 
-namespace Error
+namespace Util::Error
 {
   using BoolError   = ErrorBase<bool>;
   using IntError    = ErrorBase<int>;
@@ -48,6 +48,6 @@ namespace Error
       iter->second.reset();
     }
   }
-} // namespace Error
+} // namespace Util::Error
 
-#endif // __ERROR_HPP__
+#endif // __UTIL_ERROR__ERROR_HPP__

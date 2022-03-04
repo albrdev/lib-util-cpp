@@ -1,5 +1,5 @@
-#ifndef __VERSION_HPP__
-#define __VERSION_HPP__
+#ifndef __UTIL_VERSION__VERSION_HPP__
+#define __UTIL_VERSION__VERSION_HPP__
 
 #include <cstdint>
 #include <string>
@@ -7,7 +7,7 @@
 #include <istream>
 #include <sstream>
 
-namespace Util
+namespace Util::Version
 {
   class Version
   {
@@ -63,6 +63,6 @@ namespace Util
     std::uint32_t m_Minor;
     std::uint32_t m_Build;
   };
-} // namespace Util
+} // namespace Util::Version
 
-#endif // __VERSION_HPP__
+#endif // __UTIL_VERSION__VERSION_HPP__

@@ -1,7 +1,7 @@
 #include "ErrnoError.hpp"
 #include <cstring>
 
-namespace Error
+namespace Util::Error
 {
   std::string ErrnoError::ToString() const { return std::strerror(GetValue()); }
 
@@ -12,4 +12,4 @@ namespace Error
   ErrnoError::ErrnoError(int value)
       : ErrorBase<errno_t>(value)
   {}
-} // namespace Error
+} // namespace Util::Error

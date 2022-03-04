@@ -1,10 +1,10 @@
-#ifndef __IERROR_HPP__
-#define __IERROR_HPP__
+#ifndef __UTIL_ERROR__IERROR_HPP__
+#define __UTIL_ERROR__IERROR_HPP__
 
 #include <string>
 #include <ostream>
 
-namespace Error
+namespace Util::Error
 {
   class IError
   {
@@ -27,6 +27,6 @@ namespace Error
   };
 
   inline std::ostream& operator<<(std::ostream& stream, const IError& self) { return stream << self.ToString(); }
-} // namespace Error
+} // namespace Util::Error
 
-#endif // __IERROR_HPP__
+#endif // __UTIL_ERROR__IERROR_HPP__

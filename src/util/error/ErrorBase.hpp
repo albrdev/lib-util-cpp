@@ -1,11 +1,11 @@
-#ifndef __ERRORBASE_HPP__
-#define __ERRORBASE_HPP__
+#ifndef __UTIL_ERROR__ERRORBASE_HPP__
+#define __UTIL_ERROR__ERRORBASE_HPP__
 
 #include <memory>
 #include <mutex>
 #include "IError.hpp"
 
-namespace Error
+namespace Util::Error
 {
   template<class T>
   class ErrorBase : public IError
@@ -34,6 +34,6 @@ namespace Error
     private:
     T m_Value;
   };
-} // namespace Error
+} // namespace Util::Error
 
-#endif // __ERRORBASE_HPP__
+#endif // __UTIL_ERROR__ERRORBASE_HPP__

@@ -2,7 +2,7 @@
 #include "Version.hpp"
 
 using namespace ::testing;
-using namespace Util;
+using namespace Util::Version;
 
 namespace UnitTest
 {

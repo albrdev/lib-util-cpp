@@ -3,11 +3,11 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-namespace Error
+namespace Util::Error
 {
   std::string GaiError::ToString() const { return gai_strerror(GetValue()); }
 
   GaiError::GaiError(int value)
       : ErrorBase<int>(value)
   {}
-} // namespace Error
+} // namespace Util::Error

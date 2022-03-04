@@ -1,12 +1,12 @@
-#ifndef __ERRNOERROR_HPP__
-#define __ERRNOERROR_HPP__
+#ifndef __UTIL_ERROR__ERRNOERROR_HPP__
+#define __UTIL_ERROR__ERRNOERROR_HPP__
 
 #include <cstring>
 #include <cerrno>
 #include <type_traits>
 #include "ErrorBase.hpp"
 
-namespace Error
+namespace Util::Error
 {
   using errno_t = std::remove_reference<decltype(errno)>::type;
 
@@ -20,6 +20,6 @@ namespace Error
 
     virtual ~ErrnoError() override = default;
   };
-} // namespace Error
+} // namespace Util::Error
 
-#endif // __ERRNOERROR_HPP__
+#endif // __UTIL_ERROR__ERRNOERROR_HPP__

@@ -7,19 +7,19 @@ namespace UnitTest
 {
   TEST(Error, Basics)
   {
-    ASSERT_EQ(Error::Get(), nullptr);
+    ASSERT_EQ(Util::Error::Get(), nullptr);
 
-    Error::Set<Error::BoolError>(true);
-    ASSERT_NE(Error::Get(), nullptr);
-    ASSERT_TRUE(*Error::Get());
-    ASSERT_EQ(Error::Get()->ToString(), "");
+    Util::Error::Set<Util::Error::BoolError>(true);
+    ASSERT_NE(Util::Error::Get(), nullptr);
+    ASSERT_TRUE(*Util::Error::Get());
+    ASSERT_EQ(Util::Error::Get()->ToString(), "");
 
-    Error::Set<Error::BoolError>(false);
-    ASSERT_NE(Error::Get(), nullptr);
-    ASSERT_FALSE(*Error::Get());
-    ASSERT_EQ(Error::Get()->ToString(), "");
+    Util::Error::Set<Util::Error::BoolError>(false);
+    ASSERT_NE(Util::Error::Get(), nullptr);
+    ASSERT_FALSE(*Util::Error::Get());
+    ASSERT_EQ(Util::Error::Get()->ToString(), "");
 
-    Error::Clear();
-    ASSERT_EQ(Error::Get(), nullptr);
+    Util::Error::Clear();
+    ASSERT_EQ(Util::Error::Get(), nullptr);
   }
 } // namespace UnitTest

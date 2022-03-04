@@ -1,9 +1,9 @@
-#ifndef __GAIERROR_HPP__
-#define __GAIERROR_HPP__
+#ifndef __UTIL_ERROR__GAIERROR_HPP__
+#define __UTIL_ERROR__GAIERROR_HPP__
 
 #include "ErrorBase.hpp"
 
-namespace Error
+namespace Util::Error
 {
   class GaiError : public ErrorBase<int>
   {
@@ -14,6 +14,6 @@ namespace Error
 
     virtual ~GaiError() override = default;
   };
-} // namespace Error
+} // namespace Util::Error
 
-#endif // __GAIERROR_HPP__
+#endif // __UTIL_ERROR__GAIERROR_HPP__
