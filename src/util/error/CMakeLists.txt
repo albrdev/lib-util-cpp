@@ -4,11 +4,13 @@ target_sources(${LIBRARY_UTIL}
   PUBLIC
   IError.hpp
   ErrorBase.hpp
+  StringError.hpp
   ErrnoError.hpp
   GaiError.hpp
   Error.hpp
 
   PRIVATE
+  StringError.cpp
   ErrnoError.cpp
   GaiError.cpp
 )

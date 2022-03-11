@@ -1,8 +1,6 @@
 #ifndef __UTIL_ERROR__ERRORBASE_HPP__
 #define __UTIL_ERROR__ERRORBASE_HPP__
 
-#include <memory>
-#include <mutex>
 #include "IError.hpp"
 
 namespace Util::Error
@@ -11,7 +9,7 @@ namespace Util::Error
   class ErrorBase : public IError
   {
     public:
-    virtual operator bool() const override { return m_Value != T(); }
+    virtual operator bool() const override { return m_Value != m_Default; }
 
     virtual const T& GetValue() const { return m_Value; }
     virtual void SetValue(const T& value) { m_Value = value; }
@@ -33,7 +31,11 @@ namespace Util::Error
 
     private:
     T m_Value;
+    static const T m_Default;
   };
+
+  template<class T>
+  const T ErrorBase<T>::m_Default = T();
 } // namespace Util::Error
 
 #endif // __UTIL_ERROR__ERRORBASE_HPP__
