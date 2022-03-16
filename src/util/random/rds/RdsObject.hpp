@@ -11,8 +11,8 @@ namespace Util::Random::Rds
   class RdsObject : public IRdsObject
   {
     public:
-    const T& GetObject() const { return m_Object; }
-    T& GetObject() { return m_Object; }
+    operator const T&() const { return m_Object; }
+    operator T&() { return m_Object; }
 
     virtual double GetProbability() const override { return m_Probability; }
     virtual std::size_t GetMaxCount() const override { return m_MaxCount; }
