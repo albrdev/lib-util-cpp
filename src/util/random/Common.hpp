@@ -10,6 +10,11 @@ namespace Util::Random
   template<typename TIterator, typename TRandomGenerator>
   TIterator RandomIterator(TIterator begin, TIterator end, TRandomGenerator& randomGenerator)
   {
+    if(begin >= end)
+    {
+      return begin;
+    }
+
     std::uniform_int_distribution<std::size_t> tmpDistributor(0u, std::distance(begin, end) - 1u);
     TIterator result = begin;
     std::advance(result, tmpDistributor(randomGenerator));
