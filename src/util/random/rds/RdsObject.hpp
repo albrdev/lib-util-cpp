@@ -2,6 +2,7 @@
 #define __UTIL_RANDOM_RDS__RDSOBJECT_HPP__
 
 #include <algorithm>
+#include <exception>
 #include "IRdsObject.hpp"
 
 namespace Util::Random::Rds
@@ -21,7 +22,12 @@ namespace Util::Random::Rds
         , m_Object(object)
         , m_Probability(probability < ProbabilityMin ? ProbabilityDefault : (std::min(std::max(probability, ProbabilityMin), ProbabilityMax)))
         , m_MaxCount(maxCount)
-    {}
+    {
+      if(m_Probability >= 1.0 && m_MaxCount == MaxCountLimit)
+      {
+        throw std::length_error("Infinite count specified for guaranteed object");
+      }
+    }
 
     RdsObject(const RdsObject& other)
         : IRdsObject()
