@@ -1,8 +1,9 @@
 #ifndef __UTIL_ERROR__STRINGERROR_HPP__
 #define __UTIL_ERROR__STRINGERROR_HPP__
 
-#include <string>
 #include "ErrorBase.hpp"
+
+#include <string>
 
 namespace Util::Error
 {

@@ -1,9 +1,10 @@
 #ifndef __UTIL_RANDOM_RDS__RDSOBJECT_HPP__
 #define __UTIL_RANDOM_RDS__RDSOBJECT_HPP__
 
+#include "IRdsObject.hpp"
+
 #include <algorithm>
 #include <exception>
-#include "IRdsObject.hpp"
 
 namespace Util::Random::Rds
 {

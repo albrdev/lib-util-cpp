@@ -1,10 +1,11 @@
 #ifndef __UTIL_ERROR__ERRNOERROR_HPP__
 #define __UTIL_ERROR__ERRNOERROR_HPP__
 
+#include "ErrorBase.hpp"
+
 #include <cerrno>
 #include <string>
 #include <type_traits>
-#include "ErrorBase.hpp"
 
 namespace Util::Error
 {

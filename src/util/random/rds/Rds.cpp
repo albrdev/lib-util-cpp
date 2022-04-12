@@ -1,4 +1,5 @@
 #include "IRdsObject.hpp"
+
 #include <random>
 
 namespace Util::Random::Rds

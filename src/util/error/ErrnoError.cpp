@@ -1,4 +1,5 @@
 #include "ErrnoError.hpp"
+
 #include <cstring>
 
 namespace Util::Error

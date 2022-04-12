@@ -1,7 +1,8 @@
 #include "GaiError.hpp"
-#include <sys/types.h>
-#include <sys/socket.h>
+
 #include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 
 namespace Util::Error
 {

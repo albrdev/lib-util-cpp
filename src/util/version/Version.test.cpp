@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "Version.hpp"
+
+#include <gtest/gtest.h>
 
 using namespace ::testing;
 using namespace Util::Version;

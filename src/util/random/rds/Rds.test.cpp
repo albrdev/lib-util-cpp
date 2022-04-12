@@ -1,13 +1,15 @@
-#include <gtest/gtest.h>
 #include "Rds.hpp"
 #include "RdsObject.hpp"
-#include <vector>
-#include <map>
-#include <iostream>
+
 #include <algorithm>
+#include <exception>
+#include <iostream>
+#include <map>
 #include <random>
 #include <utility>
-#include <exception>
+#include <vector>
+
+#include <gtest/gtest.h>
 
 using namespace ::testing;
 using namespace Util::Random;

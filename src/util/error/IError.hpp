@@ -1,8 +1,8 @@
 #ifndef __UTIL_ERROR__IERROR_HPP__
 #define __UTIL_ERROR__IERROR_HPP__
 
-#include <string>
 #include <ostream>
+#include <string>
 
 namespace Util::Error
 {

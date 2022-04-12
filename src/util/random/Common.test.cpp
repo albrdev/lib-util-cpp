@@ -1,7 +1,9 @@
-#include <gtest/gtest.h>
 #include "Common.hpp"
-#include <vector>
+
 #include <random>
+#include <vector>
+
+#include <gtest/gtest.h>
 
 using namespace ::testing;
 

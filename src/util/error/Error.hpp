@@ -1,13 +1,14 @@
 #ifndef __UTIL_ERROR__ERROR_HPP__
 #define __UTIL_ERROR__ERROR_HPP__
 
+#include "ErrnoError.hpp"
+#include "ErrorBase.hpp"
+#include "GaiError.hpp"
+#include "IError.hpp"
+#include "StringError.hpp"
+
 #include <cstddef>
 #include <memory>
-#include "IError.hpp"
-#include "ErrorBase.hpp"
-#include "StringError.hpp"
-#include "ErrnoError.hpp"
-#include "GaiError.hpp"
 
 namespace Util::Error
 {

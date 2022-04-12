@@ -2,10 +2,10 @@
 #define __UTIL_VERSION__VERSION_HPP__
 
 #include <cstdint>
-#include <string>
-#include <ostream>
 #include <istream>
+#include <ostream>
 #include <sstream>
+#include <string>
 
 namespace Util::Version
 {
