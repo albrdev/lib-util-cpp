@@ -11,6 +11,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(LIBRARY_UTIL util)
 set(UNITTEST_UTIL util-test)
 
+if(TARGET ${LIBRARY_UTIL})
+    return()
+endif()
+
 project(lib-util VERSION 1.0.0)
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
