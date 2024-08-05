@@ -15,9 +15,9 @@ namespace Util
     int GetStatus() const;
     int GetSignal() const;
 
-    bool WriteStdin(const std::string& message) const;
-    bool ReadStdout(std::string& result) const;
-    bool ReadStderr(std::string& result) const;
+    void WriteStdin(const std::string& message) const;
+    std::string ReadStdout() const;
+    std::string ReadStderr() const;
 
     bool IsActive();
     bool Start();
@@ -30,13 +30,13 @@ namespace Util
     private:
     bool _Await(int options = 0);
 
-    bool SetupParent();
-    bool SetupChild();
+    void SetupParent();
+    void SetupChild();
 
-    static bool _CloseFileDescriptor(int& fileDescriptor);
-    static bool _CloseFileDescriptorPair(int (&fileDescriptors)[2]);
-    bool _CloseAllFileDescriptors();
-    bool _ReadStream(std::string& result, int fileDescriptor) const;
+    static void _CloseFileDescriptor(int& fileDescriptor);
+    static void _CloseFileDescriptorPair(int (&fileDescriptors)[2]);
+    void _CloseAllFileDescriptors();
+    std::string _ReadOutputStream(int fileDescriptor) const;
 
     const std::string& m_ExecutableFilepath;
     std::vector<std::unique_ptr<char[]>> m_ArgumentList;
@@ -50,6 +50,7 @@ namespace Util
     int m_StderrFileDescriptor[2];
 
     bool m_IsParent;
+    bool m_IsRunning;
   };
 } // namespace Util
 
