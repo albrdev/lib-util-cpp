@@ -1,19 +1,24 @@
 #ifndef __UTIL__SYSTEMCALL_HPP__
 #define __UTIL__SYSTEMCALL_HPP__
 
+#include <csignal>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <signal.h>
+#include <unistd.h>
 
 namespace Util
 {
   class SystemCall
   {
     public:
-    int GetStatus() const;
-    int GetSignal() const;
+    static bool SendSignal(pid_t id, int signal = 0);
+
+    pid_t GetPid() const;
+
+    int GetExitStatus() const;
+    int GetExitSignal() const;
 
     void WriteStdin(const std::string& message) const;
     std::string ReadStdout() const;
@@ -21,14 +26,18 @@ namespace Util
 
     bool IsActive();
     bool Start();
-    bool Stop(int signal = SIGKILL);
-    bool Await();
+    bool Stop(bool force = false);
+    void Suspend();
+    void Resume();
+    bool Await(int options = 0);
+    bool Signal(int signal = 0);
 
     SystemCall(const std::string& filepath, const std::vector<std::string>& argumentList = {}, const std::vector<std::string>& environmentList = {});
     virtual ~SystemCall();
 
     private:
-    bool _Await(int options = 0);
+    bool _Await(int options);
+    bool _AwaitExit(bool blocking);
 
     void SetupParent();
     void SetupChild();
@@ -37,6 +46,9 @@ namespace Util
     static void _CloseFileDescriptorPair(int (&fileDescriptors)[2]);
     void _CloseAllFileDescriptors();
     std::string _ReadOutputStream(int fileDescriptor) const;
+
+    static void _GenerateRawArgumentList(const std::vector<std::string>& source, std::vector<std::unique_ptr<char[]>>& result);
+    static void _GenerateRawArgumentList(const std::vector<std::unique_ptr<char[]>>& source, std::vector<char*>& result);
 
     const std::string& m_ExecutableFilepath;
     std::vector<std::unique_ptr<char[]>> m_ArgumentList;

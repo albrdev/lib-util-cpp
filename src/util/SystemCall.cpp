@@ -7,7 +7,6 @@
 #include <cstdlib>
 
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -16,9 +15,26 @@
 
 namespace Util
 {
-  int SystemCall::GetStatus() const { return (WIFEXITED(m_Status) != 0) ? WEXITSTATUS(m_Status) : 0; }
+  bool SystemCall::SendSignal(pid_t pid, int signal)
+  {
+    if(::kill(pid, signal) == -1)
+    {
+      if(errno == EINVAL)
+      {
+        throw Exception::ErrnoError("kill()");
+      }
 
-  int SystemCall::GetSignal() const { return (WIFSIGNALED(m_Status) != 0) ? WTERMSIG(m_Status) : 0; }
+      return false;
+    }
+
+    return true;
+  }
+
+  pid_t SystemCall::GetPid() const { return m_Pid; }
+
+  int SystemCall::GetExitStatus() const { return (WIFEXITED(m_Status) != 0) ? WEXITSTATUS(m_Status) : 0; }
+
+  int SystemCall::GetExitSignal() const { return (WIFSIGNALED(m_Status) != 0) ? WTERMSIG(m_Status) : 0; }
 
   std::string SystemCall::ReadStdout() const { return _ReadOutputStream(m_StdoutFileDescriptor[READ_FD]); }
 
@@ -38,7 +54,7 @@ namespace Util
     ssize_t size;
     do
     {
-      size = read(fileDescriptor, &rawBuffer, sizeof(rawBuffer));
+      size = ::read(fileDescriptor, &rawBuffer, sizeof(rawBuffer));
       if(size > 0)
       {
         buffer.push_back(rawBuffer);
@@ -66,34 +82,34 @@ namespace Util
     }
 
     std::size_t length = message.length();
-    if(write(m_StdinFileDescriptor[WRITE_FD], message.c_str(), length) != static_cast<ssize_t>(length))
+    if(::write(m_StdinFileDescriptor[WRITE_FD], message.c_str(), length) != static_cast<ssize_t>(length))
     {
       throw Exception::ErrnoError("write()");
     }
 
     char rawBuffer = '\n';
     length         = sizeof(rawBuffer);
-    if(write(m_StdinFileDescriptor[WRITE_FD], &rawBuffer, length) != static_cast<ssize_t>(length))
+    if(::write(m_StdinFileDescriptor[WRITE_FD], &rawBuffer, length) != static_cast<ssize_t>(length))
     {
       throw Exception::ErrnoError("write()");
     }
   }
 
-  bool SystemCall::IsActive() { return m_IsRunning && !_Await(WNOHANG); }
+  bool SystemCall::IsActive() { return m_IsRunning && !_AwaitExit(false); }
 
   bool SystemCall::Start()
   {
-    if(m_IsRunning)
+    if(IsActive())
     {
       return false;
     }
 
-    if((pipe2(m_StdinFileDescriptor, 0) == -1) || (pipe2(m_StdoutFileDescriptor, 0) == -1) || (pipe2(m_StderrFileDescriptor, 0) == -1))
+    if((::pipe2(m_StdinFileDescriptor, 0) == -1) || (::pipe2(m_StdoutFileDescriptor, 0) == -1) || (::pipe2(m_StderrFileDescriptor, 0) == -1))
     {
       throw Exception::ErrnoError("pipe2()");
     }
 
-    m_Pid = fork();
+    m_Pid = ::fork();
     if(m_Pid > 0)
     {
       m_IsRunning = true;
@@ -113,7 +129,7 @@ namespace Util
     return true;
   }
 
-  bool SystemCall::Stop(int signal)
+  bool SystemCall::Stop(bool force)
   {
     if(!m_IsParent)
     {
@@ -121,70 +137,105 @@ namespace Util
       std::exit(EXIT_SUCCESS);
     }
 
-    if(signal == 0)
-    {
-      return false;
-    }
-
     if(!IsActive())
     {
       return false;
     }
 
-    if(kill(m_Pid, signal) == -1)
+    if(!SystemCall::SendSignal(m_Pid, force ? SIGTERM : SIGKILL))
     {
       throw Exception::ErrnoError("kill()");
     }
 
-    return Await();
+    return _AwaitExit(true);
   }
 
-  bool SystemCall::Await()
+  void SystemCall::Suspend()
+  {
+    if(!m_IsParent)
+    {
+      return;
+    }
+
+    if(!SystemCall::SendSignal(m_Pid, SIGSTOP))
+    {
+      throw Exception::ErrnoError("kill()");
+    }
+  }
+
+  void SystemCall::Resume()
+  {
+    if(!m_IsParent)
+    {
+      return;
+    }
+
+    if(!SystemCall::SendSignal(m_Pid, SIGCONT))
+    {
+      throw Exception::ErrnoError("kill()");
+    }
+  }
+
+  bool SystemCall::Await(int options)
   {
     if(!m_IsParent)
     {
       return false;
     }
 
-    if(!_Await())
-    {
-      return false;
-    }
+    return _Await(options);
+  }
 
-    _CloseAllFileDescriptors();
-    return true;
+  bool SystemCall::_AwaitExit(bool blocking)
+  {
+    try
+    {
+      const bool status = _Await(blocking ? 0 : WNOHANG);
+      if(status)
+      {
+        m_IsRunning = false;
+        _CloseAllFileDescriptors();
+      }
+
+      return status;
+    }
+    catch(const Exception::ErrnoError& e)
+    {
+      if(e.GetCode() != ECHILD)
+      {
+        throw;
+      }
+
+      m_IsRunning = false;
+      _CloseAllFileDescriptors();
+      return true;
+    }
   }
 
   bool SystemCall::_Await(int options)
   {
     if(!m_IsParent)
     {
-      return false;
+      throw;
     }
 
-    pid_t pid = waitpid(m_Pid, &m_Status, options);
+    pid_t pid = ::waitpid(m_Pid, &m_Status, options);
     if(pid == -1)
     {
-      if(errno == ECHILD)
-      {
-        m_IsRunning = false;
-        return true;
-      }
-      else
-      {
-        throw Exception::ErrnoError("waitpid()");
-      }
+      throw Exception::ErrnoError("waitpid()");
     }
 
-    if(pid == m_Pid)
-    {
-      m_IsRunning = false;
-      return true;
-    }
-    else
+    return pid == m_Pid;
+  }
+
+  bool SystemCall::Signal(int signal)
+  {
+    if(!m_IsParent)
     {
       return false;
     }
+
+    return SystemCall::SendSignal(m_Pid, signal);
   }
 
   void SystemCall::SetupParent()
@@ -206,45 +257,37 @@ namespace Util
       return;
     }
 
-    m_Pid = getppid(); // Parent process ID
+    m_Pid = ::getppid(); // Parent process ID
     std::fflush(nullptr);
 
     // Stdin
-    if(dup3(m_StdinFileDescriptor[READ_FD], STDIN_FILENO, 0) == -1)
+    if(::dup3(m_StdinFileDescriptor[READ_FD], STDIN_FILENO, 0) == -1)
     {
       throw Exception::ErrnoError("dup3()");
     }
     SystemCall::_CloseFileDescriptorPair(m_StdinFileDescriptor);
 
     // Stdout
-    if(dup3(m_StdoutFileDescriptor[WRITE_FD], STDOUT_FILENO, 0) == -1)
+    if(::dup3(m_StdoutFileDescriptor[WRITE_FD], STDOUT_FILENO, 0) == -1)
     {
       throw Exception::ErrnoError("dup3()");
     }
     SystemCall::_CloseFileDescriptorPair(m_StdoutFileDescriptor);
 
     // Stderr
-    if(dup3(m_StderrFileDescriptor[WRITE_FD], STDERR_FILENO, 0) == -1)
+    if(::dup3(m_StderrFileDescriptor[WRITE_FD], STDERR_FILENO, 0) == -1)
     {
       throw Exception::ErrnoError("dup3()");
     }
     SystemCall::_CloseFileDescriptorPair(m_StderrFileDescriptor);
 
     std::vector<char*> argumentList;
-    argumentList.reserve(m_ArgumentList.size() + 2u);
-    std::transform(m_ArgumentList.cbegin(), m_ArgumentList.cend(), std::back_inserter(argumentList), [](const std::unique_ptr<char[]>& element) {
-      return element.get();
-    });
-    argumentList.push_back(nullptr);
-
+    argumentList.reserve(m_ArgumentList.size() + 1u);
+    SystemCall::_GenerateRawArgumentList(m_ArgumentList, argumentList);
     std::vector<char*> environmentList;
-    environmentList.reserve(m_EnvironmentList.size() + 2u);
-    std::transform(m_EnvironmentList.cbegin(), m_EnvironmentList.cend(), std::back_inserter(environmentList), [](const std::unique_ptr<char[]>& element) {
-      return element.get();
-    });
-    environmentList.push_back(nullptr);
-
-    if(execvpe(argumentList[0], &argumentList[0], &environmentList[0]) == -1)
+    environmentList.reserve(m_EnvironmentList.size() + 1u);
+    SystemCall::_GenerateRawArgumentList(m_EnvironmentList, environmentList);
+    if(::execvpe(argumentList[0], &argumentList[0], &environmentList[0]) == -1)
     {
       throw Exception::ErrnoError("execvpe()");
     }
@@ -261,7 +304,7 @@ namespace Util
   {
     if(fileDescriptor != -1)
     {
-      if(close(fileDescriptor) == -1)
+      if(::close(fileDescriptor) == -1)
       {
         throw Exception::ErrnoError("close()");
       }
@@ -276,6 +319,22 @@ namespace Util
     SystemCall::_CloseFileDescriptor(fileDescriptors[WRITE_FD]);
   }
 
+  void SystemCall::_GenerateRawArgumentList(const std::vector<std::string>& source, std::vector<std::unique_ptr<char[]>>& result)
+  {
+    std::transform(source.cbegin(), source.cend(), std::back_inserter(result), [](const std::string& element) {
+      std::unique_ptr<char[]> ptr = std::make_unique<char[]>(element.length() + 1u);
+      std::size_t length          = element.copy(ptr.get(), element.length());
+      ptr.get()[length]           = '\0';
+      return std::move(ptr);
+    });
+  }
+
+  void SystemCall::_GenerateRawArgumentList(const std::vector<std::unique_ptr<char[]>>& source, std::vector<char*>& result)
+  {
+    std::transform(source.cbegin(), source.cend(), std::back_inserter(result), [](const std::unique_ptr<char[]>& element) { return element.get(); });
+    result.push_back(nullptr);
+  }
+
   SystemCall::SystemCall(const std::string& executableFilepath, const std::vector<std::string>& argumentList, const std::vector<std::string>& environmentList)
       : m_ExecutableFilepath(executableFilepath)
       , m_ArgumentList()
@@ -288,24 +347,16 @@ namespace Util
       , m_IsParent(true)
       , m_IsRunning(false)
   {
+    m_ArgumentList.reserve(m_ArgumentList.size() + 1u);
+    m_EnvironmentList.reserve(m_EnvironmentList.size());
+
     std::unique_ptr<char[]> ptr = std::make_unique<char[]>(m_ExecutableFilepath.length() + 1u);
     std::size_t length          = m_ExecutableFilepath.copy(ptr.get(), m_ExecutableFilepath.length());
     ptr.get()[length]           = '\0';
     m_ArgumentList.push_back(std::move(ptr));
 
-    std::transform(argumentList.cbegin(), argumentList.cend(), std::back_inserter(m_ArgumentList), [](const std::string& element) {
-      std::unique_ptr<char[]> ptr = std::make_unique<char[]>(element.length() + 1u);
-      std::size_t length          = element.copy(ptr.get(), element.length());
-      ptr.get()[length]           = '\0';
-      return std::move(ptr);
-    });
-
-    std::transform(environmentList.cbegin(), environmentList.cend(), std::back_inserter(m_EnvironmentList), [](const std::string& element) {
-      std::unique_ptr<char[]> ptr = std::make_unique<char[]>(element.length() + 1u);
-      std::size_t length          = element.copy(ptr.get(), element.length());
-      ptr.get()[length]           = '\0';
-      return std::move(ptr);
-    });
+    SystemCall::_GenerateRawArgumentList(argumentList, m_ArgumentList);
+    SystemCall::_GenerateRawArgumentList(environmentList, m_EnvironmentList);
   }
 
   SystemCall::~SystemCall() { Stop(); }
