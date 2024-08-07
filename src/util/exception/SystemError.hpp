@@ -10,16 +10,16 @@ namespace Util::Exception
   class SystemError : public std::runtime_error
   {
     public:
-    T GetErrorCode() const { return m_ErrorCode; }
+    T GetCode() const { return m_Code; }
 
-    SystemError(const std::string& message, T errorCode)
+    SystemError(const std::string& message, T code)
         : std::runtime_error(message)
-        , m_ErrorCode(errorCode)
+        , m_Code(code)
     {}
 
     SystemError(const SystemError& other) noexcept
         : std::runtime_error(other)
-        , m_ErrorCode(other.m_ErrorCode)
+        , m_Code(other.m_Code)
     {}
 
     virtual ~SystemError() override = default;
@@ -27,7 +27,7 @@ namespace Util::Exception
     static const T Default;
 
     private:
-    const T m_ErrorCode;
+    const T m_Code;
   };
 
   template<class T>

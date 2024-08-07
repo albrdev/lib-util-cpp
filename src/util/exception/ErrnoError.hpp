@@ -13,12 +13,12 @@ namespace Util::Exception
   class ErrnoError : public SystemError<error_t>
   {
     public:
-    ErrnoError(const std::string& prefix = "", error_t errorCode = errno);
+    ErrnoError(const std::string& prefix = "", error_t code = errno);
     ErrnoError(const ErrnoError& other) noexcept;
     virtual ~ErrnoError() override = default;
 
     private:
-    static std::string CreateMessage(const std::string& prefix, error_t errorCode);
+    static std::string CreateMessage(const std::string& prefix, error_t code);
   };
 } // namespace Util::Exception
 
